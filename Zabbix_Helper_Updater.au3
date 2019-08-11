@@ -24,23 +24,20 @@ _myDebug("Параметры инициализации :", 1)
 _myDebug("Текущая версия ZHK:  " & $g_ZHK_efVersion)
 _myDebug("Путь к логфайлу: " & $g_ZHKdebug_sLogFilePath)
 _myDebug("Путь к файлу версий ZHK в репозитории: " & $g_sRemoteZHKVersionFilePath)
+_myDebug("Конец параметров инициализации", -1)
+_ServiceNet("Zabbix Agent", "start")
+_ServiceNet("Zabbix Agent", "stop")
+_myDebug("Завершение работы модуля Zabbix Helper: " & $g_ZHK_esUnitName)
 
-Func _ServiceStop($sServiceName)
-   _myDebug("Останавливаю сервис " & $sServiceName)
-   Local $var = RunWait(@ComSpec & " /c " & 'net stop "'&$sServiceName&'"', "", @SW_HIDE)
-   If @error Then
-	  _myDebug("Ошибка остановки сервиса")
-   Else
-	  _myDebug("Сервис остановлен")
-   EndIf
-EndFunc
-
-Func _ServiceStart($sServiceName)
-   _myDebug("Запускаю сервис " & $sServiceName)
-   Local $var = RunWait(@ComSpec & " /c " & 'net start "'&$sServiceName&'"', "", @SW_HIDE)
-   If @error Then
-	  _myDebug("Ошибка запуска сервиса")
-   Else
-	  _myDebug("Сервис запущен")
-   EndIf
+Func _ServiceNet($sServiceName, $sCommand)
+	_myDebug("Останавливаю сервис " & $sServiceName, 1)
+	Local $sCMDCommand = @ComSpec & " /c " & 'net '&$sCommand&' "'&$sServiceName&'"'
+	Local $var = RunWait($sCMDCommand, "", @SW_HIDE)
+	If @error Then
+		_myDebug("Ошибка выполнения команды")
+	Else
+		_myDebug("Команда выполнена")
+	EndIf
+	_myDebug("Отправленная команда: " & $sCMDCommand)
+	_myDebug("", -1)
 EndFunc

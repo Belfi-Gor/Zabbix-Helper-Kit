@@ -26,6 +26,6 @@ Func _myDebug($sText, $iLevel=0)
 		$sMessage &= @TAB
 	Next
 
-	If $iDebugLevel < $iDebugShow Then _DebugOut($sMessage & $sText) ;если текущий уровень лока меньше максимального уровня отображения - отображаем лог
+	If $iDebugLevel < $iDebugShow And StringLen($sText)>0 Then _DebugOut($sMessage & $sText) ;если текущий уровень лока меньше максимального уровня отображения - отображаем лог
 	If $iLevel < 0 Then $iDebugLevel += $iLevel ;если iLevel < 0 - сдвигаем отступ влево на число указанное в iLevel
 EndFunc
