@@ -1,5 +1,6 @@
 ; #INDEX# =======================================================================================================================
 ; Title .........: Zabbix Helper Updater
+; Version .......: 0.3
 ; AutoIt Version : 3.3.14.5
 ; Description ...: Программа для обновления Zabbix Helper Kit и Zabbix Agent + файл конфигурации заббикс агента
 ; Author(s) .....: Belfigor
@@ -75,6 +76,8 @@ _myDebug("Версия локального репозитория: " & $g_fZHKL
 _myDebug("Маркер установки Zabbix Agent: " & $g_iZabbixAgentInstalled)
 _myDebug("Маркер установки Zabbix Helper: " & $g_iZHKHelperInstalled)
 _myDebug("Маркер установки Zabbix Helper Updater: " & $g_iZHKUpdaterInstalled)
+_myDebug("Права администратора: " & IsAdmin())
+_myDebug("Текущая папка:" & @ScriptFullPath)
 
 If _getWorkGroup() = "WORKGROUP" Then
 	Global $g_bInDomain = False
@@ -121,6 +124,8 @@ Else
    _myDebug("Подключение к FTP установлено")
 EndIf
 
+If Not FileExists("C:/zabbix") Then DirCreate("C:/zabbix")
+
 If $g_fZHKLocalRepositoryVersion < _getZHKUpdaterRemoteVersion($g_sRemoteZHKVersionFilePath) Then
 	_myDebug("Необходимо обновление локального репозитория")
 
@@ -138,6 +143,7 @@ If $g_fZHKLocalRepositoryVersion < _getZHKUpdaterRemoteVersion($g_sRemoteZHKVers
 		_getZHKHelperApplyUpdate()
 		If $g_iZHKHelperInstalled = 0 Then _installZHKHelper()
 	EndIf
+	FileCopy(@ScriptFullPath, "C:/zabbix/Zabbix_Helper_Updater.exe", 1)
 Else
 	_myDebug("Обновление локального репозитория не требуется")
 EndIf
