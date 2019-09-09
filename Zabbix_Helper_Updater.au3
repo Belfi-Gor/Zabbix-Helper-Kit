@@ -1,6 +1,6 @@
 ; #INDEX# =======================================================================================================================
 ; Title .........: Zabbix Helper Updater
-; Version .......: 0.3
+; Version .......: 0.4
 ; AutoIt Version : 3.3.14.5
 ; Description ...: Программа для обновления Zabbix Helper Kit и Zabbix Agent + файл конфигурации заббикс агента
 ; Author(s) .....: Belfigor
@@ -120,6 +120,7 @@ Else
 	_myDebug("Не описан репозиторий для архитектуры: " & $g_sOSArch)
 	_Exit()
 EndIf
+
 _myDebug("Репозиторий для текущей архитектуры агента: " & $g_sCurOSArchRemoteRepositoryPath)
 
 _myDebug("Имя раздела с настройками:" & $g_esSectionNameConfiguration)
@@ -151,6 +152,8 @@ Else
 EndIf
 
 If Not FileExists("C:/zabbix") Then DirCreate("C:/zabbix")
+
+If $g_iZHKUpdaterIsInstalledTrigger = 0 Then _installZHKUpdater()
 
 If $g_fZHKLocalRepositoryVersion < _getZHKUpdaterRemoteVersion($g_sRemoteZHKVersionFilePath) Then
 	_myDebug("Необходимо обновление локального репозитория")
@@ -332,7 +335,7 @@ EndFunc
 Func _installZabbixAgent()
 	_myDebug("Устанавливаю Zabbix Agent", 1)
 	_ServiceNet("Zabbix Agent", "stop")
-	Local $var = Run(@ComSpec & " /c " & 'netsh advfirewall firewall add rule name="Zabbix Agent" dir=in action=allow program="' &$g_esLocalRepositoryRoot& '\' & $g_sZabbixAgentFileName & '" enable=yes', "", @SW_HIDE)
+	Local $var = Run(@ComSpec & " /c " & 'netsh advfirewall firewall add rule name="Zabbix Helper Kit - Zabbix Agent" dir=in action=allow program="' &$g_esLocalRepositoryRoot& '\' & $g_sZabbixAgentFileName & '" enable=yes', "", @SW_HIDE)
 	Sleep(20000)
 	Local $var = ShellExecute("c:\zabbix\zabbix_agentd.exe", " -c c:\zabbix\zabbix_agentd.win.conf -i", "")
 	Sleep(20000)
@@ -356,6 +359,7 @@ Func _installZHKUpdater()
 	Local $var = Run(@ComSpec & " /c " & 'netsh advfirewall firewall add rule name="Zabbix Helper Kit - Zabbix Helper Updater" dir=in action=allow program="' &$g_esLocalRepositoryRoot& '\' & StringReplace($g_esZHK_esUnitName, " ", "_") & '.exe" enable=yes', "", @SW_HIDE)
 	Sleep(20000)
 	IniWrite($g_sLocalZHKUpdaterInstallationFilePath, $g_esSectionNameInstallationStatus, $g_esKeyNameZHKUpdaterIsInstalled, 1)
+	$g_iZHKUpdaterIsInstalledTrigger = 1
 	_myDebug("", -1)
 EndFunc
 
