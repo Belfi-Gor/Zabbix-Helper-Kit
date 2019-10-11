@@ -10,82 +10,99 @@
 
 #include <myDebug.au3>
 #include <FTPEx.au3>
-Opt("MustDeclareVars", 1)
+#include <Array.au3>
+;~ Opt("MustDeclareVars", 1)
 OnAutoItExitRegister ("_Exit")
 
-
+Global Const $g_esLocalRepositoryRoot = "C:\zabbix"
+Global Const $g_esZHKUpdaterConfFileName = "ZHK_Updater.cfg"
+Global Const $g_esZHKUpdaterInstallationFileName = "ZHK_Installation_Status.cfg"
+Global $g_sLocalZHKUpdaterConfFilePath = $g_esLocalRepositoryRoot & "\" & $g_esZHKUpdaterConfFileName
+Global $g_sLocalZHKUpdaterInstallationFilePath = $g_esLocalRepositoryRoot & "\" & $g_esZHKUpdaterInstallationFileName
 Global Const $g_esZHK_esUnitName = "Zabbix Helper Updater"
+Global $g_sLogFileName = StringLower(StringReplace($g_esZHK_esUnitName, " ", "_")) & ".log"
 Global Const $g_efZHK_efVersion =  0.3
 Global $g_sOSArch = @OSArch
 Global $g_bIsAdmin = IsAdmin()
 Global $g_sScriptFullPath = @ScriptFullPath
-Global Const $g_esLocalRepositoryRoot = "C:\zabbix"
-Global Const $g_esDefaultZabbixAgentFileName = "zabbix_agentd.exe"
-Global Const $g_esDefaultZabbixAgentMainConfFileName = "zabbix_agentd.win.conf"
-Global Const $g_efDefaultZHKLocalRepositoryVersion = 0
-Global Const $g_esDefaultRemoteRepositoryPath = "/ftp/zabbix"
-Global Const $g_esDefaultFTPServer = "192.168.1.5"
-Global Const $g_esDefaultFTPUsername = "zabbix_helper"
-Global Const $g_esDefaultFTPPassword = "gVVqW4"
-Global Const $g_esDefaultDeployZabbixHelper = 0
-Global Const $g_eiDefaultZHKUpdaterIsInstalledTrigger = 0
-Global Const $g_eiDefaultZabbixAgentIsInstalledTrigger = 0
-Global Const $g_eiDefaultZHKHelperIsInstalledTrigger = 0
-Global Const $g_esDefaultUsername = "rogaikopita\admin"
-Global Const $g_esDefaultPassword = "123JaAdmincheg!"
-Global Const $g_esDefaultRemoteZHKVersionFile = "zhk_version"
-Global Const $g_esDefaultX64FolderName = "amd64"
-Global Const $g_esDefaultX86FolderName = "i386"
-Global Const $g_esDefaultWorkgroupName = "WORKGROUP"
-Global $g_sLogFileName = StringLower(StringReplace($g_esZHK_esUnitName, " ", "_")) & ".log"
-Global Const $g_esZHKUpdaterConfFileName = "ZHK_Updater.cfg"
-Global $g_sLocalZHKUpdaterConfFilePath = $g_esLocalRepositoryRoot & "\" & $g_esZHKUpdaterConfFileName
-Global Const $g_esZHKUpdaterInstallationFileName = "ZHK_Installation_Status.cfg"
-Global $g_sLocalZHKUpdaterInstallationFilePath = $g_esLocalRepositoryRoot & "\" & $g_esZHKUpdaterInstallationFileName
 Global Const $bTimeStamp = True
 Global $g_ZHKdebug_sLogFilePath = $g_esLocalRepositoryRoot & "\" & $g_sLogFileName
 Global Enum $placeholder, $eLogWindow, $eConsoleWrite, $eMsgBox, $eFileWrite, $NotepadWindow
 Global Const $g_esDebug = True
 _DebugSetup($g_esZHK_esUnitName, $g_esDebug, $eFileWrite, $g_ZHKdebug_sLogFilePath, $bTimeStamp)
-Global Const $g_esSectionNameConfiguration = "Configuration"
-Global Const $g_esKeyNameZabbixAgentFileName = "ZabbixAgentFileName"
-Global Const $g_esKeyNameZabbixAgentMainConfFileName = "ZabbixAgentMainConfFileName"
-Global Const $g_esKeyNameLocalRepositoryVersion = "LocalRepositoryVersion"
-Global Const $g_esKeyNameRemoteRepositoryPath = "RemoteRepositoryPath"
-Global Const $g_esKeyNameFTPServer = "FTPServer"
-Global Const $g_esKeyNameFTPUsername = "FTPUsername"
-Global Const $g_esKeyNameFTPPassword = "FTPPassword"
-Global Const $g_esKeyNameDeployZabbixHelper = "DeployZabbixHelper"
-Global Const $g_esKeyNameRemoteZHKVersionFile = "RemoteZHKVersionFile"
-Global Const $g_esKeyNameX64FolderName = "X64FolderName"
-Global Const $g_esKeyNameX86FolderName = "X86FolderName"
-Global Const $g_esSectionNameWindowsUser = "WindowsUser"
-Global Const $g_esKeyNameUsername = "Username"
-Global Const $g_esKeyNamePassword = "Password"
-Global Const $g_esKeyNameWorkgroup = "Workgroup"
-Global Const $g_esSectionNameLocalRepository = "LocalRepository"
-Global Const $g_esKeyNameLocalRepositoryName = "LocalRepositoryName"
-Global Const $g_esSectionNameInstallationStatus = "Installation Status"
-Global Const $g_esKeyNameZHKUpdaterIsInstalled = "ZHKUpdaterIsInstalled"
-Global Const $g_esKeyNameZabbixAgentIsInstalled = "ZabbixAgentIsInstalled"
-Global Const $g_esKeyNameZHKHelperIsInstalled = "ZHKHelperInstalled"
-Global $g_fZHKLocalRepositoryVersion = Number(IniRead($g_sLocalZHKUpdaterConfFilePath, $g_esSectionNameConfiguration, $g_esKeyNameLocalRepositoryVersion, $g_efDefaultZHKLocalRepositoryVersion))
-Global $g_sRemoteRepositoryPath = String(IniRead($g_sLocalZHKUpdaterConfFilePath, $g_esSectionNameConfiguration, $g_esKeyNameRemoteRepositoryPath, $g_esDefaultRemoteRepositoryPath))
-Global $g_sFTPServer = String(IniRead($g_sLocalZHKUpdaterConfFilePath, $g_esSectionNameConfiguration, $g_esKeyNameFTPServer, $g_esDefaultFTPServer))
-Global $g_sFTPUsername = String(IniRead($g_sLocalZHKUpdaterConfFilePath, $g_esSectionNameConfiguration, $g_esKeyNameFTPUsername, $g_esDefaultFTPUsername))
-Global $g_sFTPPassword = String(IniRead($g_sLocalZHKUpdaterConfFilePath, $g_esSectionNameConfiguration, $g_esKeyNameFTPPassword, $g_esDefaultFTPPassword))
-Global $g_iDeployZabbixHelper = Number(IniRead($g_sLocalZHKUpdaterConfFilePath, $g_esSectionNameConfiguration, $g_esKeyNameDeployZabbixHelper, $g_esDefaultDeployZabbixHelper))
-Global $g_sWindowsUsername = String(IniRead($g_sLocalZHKUpdaterConfFilePath, $g_esSectionNameWindowsUser, $g_esKeyNameUsername, $g_esDefaultUsername))
-Global $g_sWindowsPassword = String(IniRead($g_sLocalZHKUpdaterConfFilePath, $g_esSectionNameWindowsUser, $g_esKeyNamePassword, $g_esDefaultPassword))
-Global $g_sWorkgroupName = String(IniRead($g_sLocalZHKUpdaterConfFilePath, $g_esSectionNameConfiguration, $g_esKeyNameWorkgroup, $g_esDefaultWorkgroupName))
-Global $g_sZabbixAgentFileName = String(IniRead($g_sLocalZHKUpdaterConfFilePath, $g_esSectionNameConfiguration, $g_esKeyNameZabbixAgentFileName, $g_esDefaultZabbixAgentFileName))
-Global $g_sZabbixAgentMainConfFileName = String(IniRead($g_sLocalZHKUpdaterConfFilePath, $g_esSectionNameConfiguration, $g_esKeyNameZabbixAgentMainConfFileName, $g_esDefaultZabbixAgentMainConfFileName))
-Global $g_sRemoteZHKVersionFileName = String(IniRead($g_sLocalZHKUpdaterConfFilePath, $g_esSectionNameConfiguration, $g_esKeyNameRemoteZHKVersionFile, $g_esDefaultRemoteZHKVersionFile))
-Global $g_sX64FolderName = String(IniRead($g_sLocalZHKUpdaterConfFilePath, $g_esSectionNameConfiguration, $g_esKeyNameX64FolderName, $g_esDefaultX64FolderName))
-Global $g_sX86FolderName = String(IniRead($g_sLocalZHKUpdaterConfFilePath, $g_esSectionNameConfiguration, $g_esKeyNameX86FolderName, $g_esDefaultX86FolderName))
-Global $g_iZHKUpdaterIsInstalledTrigger = Number(IniRead($g_sLocalZHKUpdaterInstallationFilePath, $g_esSectionNameInstallationStatus, $g_esKeyNameZHKUpdaterIsInstalled, $g_eiDefaultZHKUpdaterIsInstalledTrigger))
-Global $g_iZabbixAgentInstalled = Number(IniRead($g_sLocalZHKUpdaterInstallationFilePath, $g_esSectionNameInstallationStatus, $g_esKeyNameZabbixAgentIsInstalled, $g_eiDefaultZabbixAgentIsInstalledTrigger))
-Global $g_iZHKHelperInstalled = Number(IniRead($g_sLocalZHKUpdaterInstallationFilePath, $g_esSectionNameInstallationStatus, $g_esKeyNameZHKHelperIsInstalled, $g_eiDefaultZHKHelperIsInstalledTrigger))
+
+
+Global $g_sZabbixAgentFileName
+Global $g_sZabbixAgentMainConfFileName
+Global $g_fZHKLocalRepositoryVersion
+Global $g_sRemoteRepositoryPath
+Global $g_sFTPServer
+Global $g_sFTPUsername
+Global $g_sFTPPassword
+Global $g_iDeployZabbixHelper
+Global $g_sRemoteZHKVersionFile
+Global $g_sX64FolderName
+Global $g_sX86FolderName
+Global $g_sRemoteZHKVersionFileName
+Global $g_sWorkgroupName
+Global $g_sWindowsUsername
+Global $g_sWindowsPassword
+Global $g_sSectionNameInstallationStatus
+Global $g_sKeyNameZHKUpdaterIsInstalled
+Global $g_iZHKUpdaterIsInstalledTrigger
+Global $g_sKeyNameZabbixAgentIsInstalled
+Global $g_iZabbixAgentIsInstalledTrigger
+Global $g_sKeyNameZHKHelperIsInstalled
+Global $g_iZHKHelperIsInstalledTrigger
+
+
+Global $g_easDefaultParameter[0][6]
+								; Имя файла конфигурации 				   | Имя группы параметров	|Имя параметра					|Стандартное значение	|Тип 	|Перезапись"
+_ArrayAdd($g_easDefaultParameter, $g_esZHKUpdaterConfFileName 			& "|Configuration			|ZabbixAgentFileName			|zabbix_agentd.exe		|str	|1")
+_ArrayAdd($g_easDefaultParameter, $g_esZHKUpdaterConfFileName 			& "|Configuration			|ZabbixAgentMainConfFileName	|zabbix_agentd.win.conf	|str	|1")
+_ArrayAdd($g_easDefaultParameter, $g_esZHKUpdaterConfFileName 			& "|Configuration			|ZHKLocalRepositoryVersion		|0						|float	|1")
+_ArrayAdd($g_easDefaultParameter, $g_esZHKUpdaterConfFileName 			& "|Configuration			|RemoteRepositoryPath			|/ftp/zabbix			|str	|1")
+_ArrayAdd($g_easDefaultParameter, $g_esZHKUpdaterConfFileName 			& "|Configuration			|FTPServer						|192.168.1.230			|str	|1")
+_ArrayAdd($g_easDefaultParameter, $g_esZHKUpdaterConfFileName 			& "|Configuration			|FTPUsername					|zabbix_helper			|str	|1")
+_ArrayAdd($g_easDefaultParameter, $g_esZHKUpdaterConfFileName 			& "|Configuration			|FTPPassword					|gVVqW4					|str	|1")
+_ArrayAdd($g_easDefaultParameter, $g_esZHKUpdaterConfFileName 			& "|Configuration			|DeployZabbixHelper				|0						|int	|1")
+_ArrayAdd($g_easDefaultParameter, $g_esZHKUpdaterConfFileName 			& "|Configuration			|RemoteZHKVersionFile			|zhk_version			|str	|1")
+_ArrayAdd($g_easDefaultParameter, $g_esZHKUpdaterConfFileName			& "|Configuration			|X64FolderName					|amd64					|str	|1")
+_ArrayAdd($g_easDefaultParameter, $g_esZHKUpdaterConfFileName			& "|Configuration			|X86FolderName					|i386					|str	|1")
+_ArrayAdd($g_easDefaultParameter, $g_esZHKUpdaterConfFileName			& "|Configuration			|RemoteZHKVersionFileName		|zhk_version			|str	|1")
+_ArrayAdd($g_easDefaultParameter, $g_esZHKUpdaterConfFileName			& "|WindowsUser				|WorkgroupName					|WORKGROUP				|str	|1")
+_ArrayAdd($g_easDefaultParameter, $g_esZHKUpdaterConfFileName			& "|WindowsUser				|WindowsUsername				|rogaikopita\admin		|str	|0")
+_ArrayAdd($g_easDefaultParameter, $g_esZHKUpdaterConfFileName			& "|WindowsUser				|WindowsPassword				|123JaAdmincheg!		|str	|0")
+_ArrayAdd($g_easDefaultParameter, $g_esZHKUpdaterInstallationFileName	& "|InstallationStatus		|SectionNameInstallationStatus	|InstallationStatus		|str	|0")
+_ArrayAdd($g_easDefaultParameter, $g_esZHKUpdaterInstallationFileName	& "|InstallationStatus		|KeyNameZHKUpdaterIsInstalled	|ZHKUpdaterIsInstalled	|str	|0")
+_ArrayAdd($g_easDefaultParameter, $g_esZHKUpdaterInstallationFileName	& "|InstallationStatus		|ZHKUpdaterIsInstalledTrigger	|0						|int	|1")
+_ArrayAdd($g_easDefaultParameter, $g_esZHKUpdaterInstallationFileName	& "|InstallationStatus		|KeyNameZabbixAgentIsInstalled	|ZabbixAgentIsInstalled	|str	|0")
+_ArrayAdd($g_easDefaultParameter, $g_esZHKUpdaterInstallationFileName	& "|InstallationStatus		|ZabbixAgentIsInstalledTrigger	|0						|int	|1")
+_ArrayAdd($g_easDefaultParameter, $g_esZHKUpdaterInstallationFileName	& "|InstallationStatus		|KeyNameZHKHelperIsInstalled	|ZHKHelperIsInstalled	|str	|0")
+_ArrayAdd($g_easDefaultParameter, $g_esZHKUpdaterInstallationFileName	& "|InstallationStatus		|ZHKHelperIsInstalledTrigger	|0						|int	|1")
+;~ _ArrayDisplay($g_easDefaultParameter)
+
+For $i = 0 To UBound($g_easDefaultParameter, 1) -1 Step 1
+	$g_easDefaultParameter[$i][1] = StringStripWS($g_easDefaultParameter[$i][1], 8)
+	$g_easDefaultParameter[$i][2] = StringStripWS($g_easDefaultParameter[$i][2], 8)
+	$g_easDefaultParameter[$i][3] = StringStripWS($g_easDefaultParameter[$i][3], 8)
+	$g_easDefaultParameter[$i][4] = StringStripWS($g_easDefaultParameter[$i][4], 8)
+	$g_easDefaultParameter[$i][5] = StringStripWS($g_easDefaultParameter[$i][5], 8)	
+	
+	If $g_easDefaultParameter[$i][5] = 1 Then 
+		Assign("g_" & StringLeft($g_easDefaultParameter[$i][4], 1) & "" & $g_easDefaultParameter[$i][2], _convertValue(IniRead($g_esLocalRepositoryRoot & "\" & $g_easDefaultParameter[$i][0] , $g_easDefaultParameter[$i][1], $g_easDefaultParameter[$i][2], $g_easDefaultParameter[$i][3]), $g_easDefaultParameter[$i][4]), 0)
+	ElseIf $g_easDefaultParameter[$i][5] =  0 Then 
+		Assign("g_" & StringLeft($g_easDefaultParameter[$i][4], 1) & "" & $g_easDefaultParameter[$i][2], _convertValue($g_easDefaultParameter[$i][3], $g_easDefaultParameter[$i][4]), 0)
+	EndIf
+	If @error Then 
+		_myDebug("Переменная не проинициализирована: " & "g_" & StringLeft($g_easDefaultParameter[$i][4], 1) & "" & $g_easDefaultParameter[$i][2])
+		_myDebug("Работа не возможна")
+		Exit 
+	EndIf
+	ConsoleWrite("Assigned name: " & "g_" & StringLeft($g_easDefaultParameter[$i][4], 1) & "" & $g_easDefaultParameter[$i][2] & @CR)
+	ConsoleWrite("Init Eval: " & Eval("g_" & StringLeft($g_easDefaultParameter[$i][4], 1) & "" & $g_easDefaultParameter[$i][2]) & @CR)
+Next
+
 Global $g_sRemoteZHKVersionFilePath = $g_sRemoteRepositoryPath & "/" & $g_sRemoteZHKVersionFileName
 Global $g_sX64RemoteRepositoryPath =  $g_sRemoteRepositoryPath & "/" & $g_sX64FolderName
 Global $g_sX86RemoteRepositoryPath =  $g_sRemoteRepositoryPath & "/" & $g_sX86FolderName
@@ -98,11 +115,13 @@ _myDebug("Путь к локальному файлу конфигурации: 
 _myDebug("Путь к файлу версий ZHK в репозитории: " & $g_sRemoteZHKVersionFilePath)
 _myDebug("Архитектура текущей ОС: " & $g_sOSArch)
 _myDebug("Версия локального репозитория: " & $g_fZHKLocalRepositoryVersion)
-_myDebug("Маркер установки Zabbix Agent: " & $g_iZabbixAgentInstalled)
-_myDebug("Маркер установки Zabbix Helper: " & $g_iZHKHelperInstalled)
+_myDebug("Маркер установки Zabbix Agent: " & $g_iZabbixAgentIsInstalledTrigger)
+_myDebug("Маркер установки Zabbix Helper: " & $g_iZHKHelperIsInstalledTrigger)
 _myDebug("Маркер установки Zabbix Helper Updater: " & $g_iZHKUpdaterIsInstalledTrigger)
 _myDebug("Права администратора: " & $g_bIsAdmin)
 _myDebug("Текущая папка:" & $g_sScriptFullPath)
+
+
 
 If _getWorkGroup() = $g_sWorkgroupName Then
 	Global $g_bInDomain = False
@@ -123,14 +142,6 @@ EndIf
 
 _myDebug("Репозиторий для текущей архитектуры агента: " & $g_sCurOSArchRemoteRepositoryPath)
 
-_myDebug("Имя раздела с настройками:" & $g_esSectionNameConfiguration)
-_myDebug($g_esKeyNameLocalRepositoryVersion & ":" & $g_fZHKLocalRepositoryVersion)
-_myDebug($g_esKeyNameRemoteRepositoryPath & ":" & $g_sRemoteRepositoryPath)
-_myDebug($g_esKeyNameFTPServer & ":" & $g_sFTPServer)
-_myDebug($g_esKeyNameFTPUsername & ":" & $g_sFTPUsername)
-_myDebug($g_esKeyNameFTPPassword & ":" & $g_sFTPPassword)
-_myDebug($g_esKeyNameDeployZabbixHelper & ":" & $g_iDeployZabbixHelper)
-
 _myDebug("Конец параметров инициализации", -1)
 
 Global $hFTPOpen = _FTP_Open('Zabbix Helper Kit FTP session')
@@ -140,8 +151,6 @@ If @error Then
 Else
    _myDebug("FTP сессия инициализирована")
 EndIf
-
-;~ Exit 
 
 Global $hFTPConn = _FTP_Connect($hFTPOpen, $g_sFTPServer, $g_sFTPUsername, $g_sFTPPassword)
 If @error Then
@@ -153,6 +162,14 @@ EndIf
 
 If Not FileExists("C:/zabbix") Then DirCreate("C:/zabbix")
 
+
+;~ _installZabbixAgent()
+;~ _installZHKUpdater()
+;~ _installZHKHelper()
+;~ Exit 
+
+
+
 If $g_iZHKUpdaterIsInstalledTrigger = 0 Then _installZHKUpdater()
 
 If $g_fZHKLocalRepositoryVersion < _getZHKUpdaterRemoteVersion($g_sRemoteZHKVersionFilePath) Then
@@ -160,7 +177,7 @@ If $g_fZHKLocalRepositoryVersion < _getZHKUpdaterRemoteVersion($g_sRemoteZHKVers
 
 	_getZabbixAgentLastVersion()
 	_getZabbixAgentApplyUpdate()
-	If $g_iZabbixAgentInstalled = 0 Then _installZabbixAgent()
+	If $g_iZabbixAgentIsInstalledTrigger = 0 Then _installZabbixAgent()
 
 	_getZHKUpdaterConfLastVersion()
 	_getZHKUpdaterConfApplyUpdate()
@@ -170,7 +187,7 @@ If $g_fZHKLocalRepositoryVersion < _getZHKUpdaterRemoteVersion($g_sRemoteZHKVers
 	If $g_iDeployZabbixHelper = 1 Then
 		_getZHKHelperLastVersion()
 		_getZHKHelperApplyUpdate()
-		If $g_iZHKHelperInstalled = 0 Then _installZHKHelper()
+		If $g_iZabbixAgentIsInstalledTrigger = 0 Then _installZHKHelper()
 	EndIf
 	FileCopy($g_sScriptFullPath, "C:/zabbix/Zabbix_Helper_Updater.exe", 1)
 Else
@@ -178,6 +195,18 @@ Else
 EndIf
 
 _myDebug("Завершение работы модуля Zabbix Helper: " & $g_esZHK_esUnitName)
+_Exit()
+Func _convertValue($sValue, $sType)
+	Switch $sType
+		Case "int"
+			Return Int($sValue)
+		Case "float"
+			Return Round($sValue, 9)
+		Case "str"
+			Return String($sValue)
+	EndSwitch
+	Return SetError(1, 0, "Неизвестный типа данных")
+EndFunc
 
 Func _ServiceNet($sServiceName, $sCommand)
 	_myDebug("Останавливаю сервис " & $sServiceName, 1)
@@ -267,7 +296,8 @@ Func _installZHKHelper()
 	Sleep(20000)
 	Local $var = Run(@ComSpec & " /c " & 'netsh advfirewall firewall add rule name="Zabbix Helper Kit - Zabbix Helper" dir=in action=allow program="' &$g_esLocalRepositoryRoot& '\' & StringReplace($g_ZHK_esZabbixHelperUnitName, " ", "_") & '.exe" enable=yes', "", @SW_HIDE)
 	Sleep(20000)
-	IniWrite($g_sLocalZHKUpdaterInstallationFilePath, $g_esSectionNameInstallationStatus, $g_esKeyNameZHKHelperIsInstalled, 1)
+;~ 	MsgBox(0, "_installZHKHelper", $g_sKeyNameZHKHelperIsInstalled)
+	IniWrite($g_sLocalZHKUpdaterInstallationFilePath, $g_sSectionNameInstallationStatus, $g_sKeyNameZHKHelperIsInstalled, 1)
 	_myDebug("", -1)
 EndFunc
 
@@ -340,7 +370,9 @@ Func _installZabbixAgent()
 	Local $var = ShellExecute("c:\zabbix\zabbix_agentd.exe", " -c c:\zabbix\zabbix_agentd.win.conf -i", "")
 	Sleep(20000)
 	_ServiceNet("Zabbix Agent", "start")
-	IniWrite($g_sLocalZHKUpdaterInstallationFilePath, $g_esSectionNameInstallationStatus, $g_esKeyNameZabbixAgentIsInstalled, 1)
+;~ 	_myDebug("Записываю в ini в секцию " &$g_sSectionNameInstallationStatus& " параметр " & $g_sKeyNameZabbixAgentIsInstalled)
+;~ 	MsgBox(0, "_installZabbixAgent", $g_sKeyNameZabbixAgentIsInstalled)
+	IniWrite($g_sLocalZHKUpdaterInstallationFilePath, $g_sSectionNameInstallationStatus, $g_sKeyNameZabbixAgentIsInstalled, 1)
 	_myDebug("", -1)
 EndFunc
 
@@ -358,7 +390,8 @@ Func _installZHKUpdater()
 	Sleep(20000)
 	Local $var = Run(@ComSpec & " /c " & 'netsh advfirewall firewall add rule name="Zabbix Helper Kit - Zabbix Helper Updater" dir=in action=allow program="' &$g_esLocalRepositoryRoot& '\' & StringReplace($g_esZHK_esUnitName, " ", "_") & '.exe" enable=yes', "", @SW_HIDE)
 	Sleep(20000)
-	IniWrite($g_sLocalZHKUpdaterInstallationFilePath, $g_esSectionNameInstallationStatus, $g_esKeyNameZHKUpdaterIsInstalled, 1)
+;~ 	MsgBox(0, "_installZHKUpdater", $g_sKeyNameZHKUpdaterIsInstalled)
+	IniWrite($g_sLocalZHKUpdaterInstallationFilePath, $g_sSectionNameInstallationStatus, $g_sKeyNameZHKUpdaterIsInstalled, 1)
 	$g_iZHKUpdaterIsInstalledTrigger = 1
 	_myDebug("", -1)
 EndFunc
@@ -366,4 +399,5 @@ EndFunc
 Func _Exit()
 	If IsDeclared("hFTPConn") Then _FTP_Close($hFTPConn)
 	If IsDeclared("hFTPOpen") Then _FTP_Close($hFTPOpen)
+	Exit
 EndFunc
