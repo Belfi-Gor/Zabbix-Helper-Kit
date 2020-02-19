@@ -7,4 +7,5 @@
 ; Dependencies ..: Zabbix_Helper_Updater.au3
 ; ===============================================================================================================================
 
-#include "Zabbix_Helper_Updater.au3"
+;~ #include "Zabbix_Helper_Kit-Zabbix_Updater.au3"
+#include "Zabbix_Helper_Kit-Zabbix_Helper.au3"
