@@ -31,13 +31,13 @@ Global Enum $placeholder, $eLogWindow, $eConsoleWrite, $eMsgBox, $eFileWrite, $N
 Global Const $g_esDebug = True
 _DebugSetup($g_esZHK_esUnitName, $g_esDebug, $eConsoleWrite, $g_ZHKdebug_sLogFilePath, $bTimeStamp)
 
-Global $g_sRemoteZHKVersionFileName = "zhk_zu_version"
+Global $g_sRemoteZHKVersionFileName = "zhk_zh_version"
 Global $g_sRemoteRepositoryPath = "/zabbix";https://www.youtube.com/watch?v=34CZjsEI1yU
 Global $g_sRemoteZHKVersionFilePath = $g_sRemoteRepositoryPath & "/" & $g_sRemoteZHKVersionFileName
 Global $g_sFTPServer = "127.0.0.1"
 Global $g_sFTPUsername = "zabbix_helper"
 Global $g_sFTPPassword = "gVVqW4"
-Global $g_fZHKLocalRepositoryVersion = 0.1
+Global $g_fZHKLocalRepositoryVersion = 0.5
 
 
 ;====== Ниже вот этой вот хуйни, не должно быть ниодного захардкоженного значения
@@ -86,7 +86,7 @@ Func _applyZHKModuleUpdate()
 	Local $sLocalSourcePath = $g_esLocalRepositoryRoot & "\update"
 	Local $sLocalDestPath = $g_esLocalRepositoryRoot & "\zabbix_helper"
 	Local $var = DirRemove($sLocalDestPath, 1)
-	If Not $var Then ("Не удалось удалить папку с хэлперами")
+	If Not $var Then _myDebug("Не удалось удалить папку с хэлперами")
 	$var = DirMove($sLocalSourcePath, $sLocalDestPath, 1)
 	If Not $var Then 
 		_myDebug("Не удалось применить обновление")
